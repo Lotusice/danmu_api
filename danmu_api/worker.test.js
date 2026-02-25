@@ -10,6 +10,7 @@ import { getRedisKey, pingRedis, setRedisKey, setRedisKeyWithExpiry } from "./ut
 import { getImdbepisodes } from "./utils/imdb-util.js";
 import { getTMDBChineseTitle, getTmdbJpDetail, searchTmdbTitles } from "./utils/tmdb-util.js";
 import { getDoubanDetail, getDoubanInfoByImdbId, searchDoubanTitles } from "./utils/douban-util.js";
+import AIClient from './utils/ai-util.js';
 import RenrenSource from "./sources/renren.js";
 import HanjutvSource from "./sources/hanjutv.js";
 import BahamutSource from "./sources/bahamut.js";
@@ -18,7 +19,11 @@ import IqiyiSource from "./sources/iqiyi.js";
 import MangoSource from "./sources/mango.js";
 import BilibiliSource from "./sources/bilibili.js";
 import YoukuSource from "./sources/youku.js";
+import MiguSource from "./sources/migu.js";
 import SohuSource from "./sources/sohu.js";
+import LeshiSource from "./sources/leshi.js";
+import XiguaSource from "./sources/xigua.js";
+import MaiduiduiSource from "./sources/maiduidui.js";
 import AnimekoSource from "./sources/animeko.js";
 import OtherSource from "./sources/other.js";
 import { NodeHandler } from "./configs/handlers/node-handler.js";
@@ -60,7 +65,11 @@ test('worker.js API endpoints', async (t) => {
   const mangoSource = new MangoSource();
   const bilibiliSource = new BilibiliSource();
   const youkuSource = new YoukuSource();
+  const miguSource = new MiguSource();
   const sohuSource = new SohuSource();
+  const leshiSource = new LeshiSource();
+  const xiguaSource = new XiguaSource();
+  const maiduiduiSource = new MaiduiduiSource();
   const animekoSource = new AnimekoSource();
   const otherSource = new OtherSource();
 
@@ -93,6 +102,25 @@ test('worker.js API endpoints', async (t) => {
     ({title, season, episode} = await extractTitleSeasonEpisode("宇宙Marry Me? S02E08"));
     assert(title === "宇宙Marry Me?" && season == 2 && episode == 8, `Expected title === "宇宙Marry Me?" && season == 2 && episode == 8, but got ${title} ${season} ${episode}`);
   });
+
+  // await t.test('Test ai cilent', async () => {
+  //   const ai = new AIClient({
+  //     apiKey: 'xxxxxxxxxxxxxxxxxxxxx',
+  //     baseURL: 'https://open.bigmodel.cn/api/paas/v4', // 换成任意兼容 OpenAI 协议的地址
+  //     model: 'GLM-4.7-FlashX',
+  //     systemPrompt: '回答尽量简洁',
+  //   })
+
+  //   // const answer = await ai.ask('你好')
+  //   // console.log(answer);
+
+  //   const status = await ai.verify()
+  //   if (status.ok) {
+  //     console.log('连接正常:', status)
+  //   } else {
+  //     console.log('连接失败:', status.error)
+  //   }
+  // });
 
   // await t.test('GET tencent danmu', async () => {
   //   const res = await tencentSource.getComments("http://v.qq.com/x/cover/rjae621myqca41h/j0032ubhl9s.html", "qq");
@@ -207,6 +235,29 @@ test('worker.js API endpoints', async (t) => {
   //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
   // });
 
+  // await t.test('GET migu danmu', async () => {
+  //   const res = await miguSource.getComments("https://www.miguvideo.com/p/detail/725117610", "migu");
+  //   assert(res.length > 2, `Expected res.length > 2, but got ${res.length}`);
+  // });
+
+  // await t.test('GET migu danmu segments', async () => {
+  //   const res = await miguSource.getComments("https://www.miguvideo.com/p/detail/725117610", "migu", true);
+  //   console.log(res.segmentList);
+  //   assert(res.type === "migu", `Expected res.type === "migu", but got ${res.type === "migu"}`);
+  //   assert(res.segmentList.length >= 0, `Expected res.segmentList.length >= 0, but got ${res.segmentList.length}`);
+  // });
+
+  // await t.test('GET migu segment danmu', async () => {
+  //   const segment = Segment.fromJson({
+  //     type: 'migu',
+  //     segment_start: 0,
+  //     segment_end: 300,
+  //     url: 'https://webapi.miguvideo.com/gateway/live_barrage/videox/barrage/v2/list/760834922/760835542/0/30/020',
+  //   });
+  //   const res = await miguSource.getSegmentComments(segment);
+  //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
+  // });
+
   // await t.test('GET sohu danmu', async () => {
   //   const res = await sohuSource.getComments("https://film.sohu.com/album/8345543.html");
   //   assert(res.length > 2, `Expected res.length > 2, but got ${res.length}`);
@@ -226,6 +277,73 @@ test('worker.js API endpoints', async (t) => {
   //     url: 'https://api.danmu.tv.sohu.com/dmh5/dmListAll?act=dmlist_v2&vid=2547437&aid=8345543&pct=2&time_begin=3000&time_end=3300&dct=1&request_from=h5_js',
   //   });
   //   const res = await sohuSource.getSegmentComments(segment);
+  //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
+  // });
+
+  // await t.test('GET leshi danmu', async () => {
+  //   const res = await leshiSource.getComments("https://www.le.com/ptv/vplay/1578861.html");
+  //   assert(res.length > 2, `Expected res.length > 2, but got ${res.length}`);
+  // });
+
+  // await t.test('GET leshi danmu segments', async () => {
+  //   const res = await leshiSource.getComments("https://www.le.com/ptv/vplay/1578861.html", "leshi", true);
+  //   assert(res.type === "leshi", `Expected res.type === "leshi", but got ${res.type === "leshi"}`);
+  //   assert(res.segmentList.length >= 0, `Expected res.segmentList.length >= 0, but got ${res.segmentList.length}`);
+  // });
+
+  // await t.test('GET leshi segment danmu', async () => {
+  //   const segment = Segment.fromJson({
+  //     type: 'leshi',
+  //     segment_start: 1800,
+  //     segment_end: 2100,
+  //     url: 'https://hd-my.le.com/danmu/list?vid=1578861&start=1800&end=2100&callback=vjs_1768494351290',
+  //   });
+  //   const res = await leshiSource.getSegmentComments(segment);
+  //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
+  // });
+
+  // await t.test('GET xigua danmu', async () => {
+  //   const res = await xiguaSource.getComments("https://m.ixigua.com/video/6551333775337325060", "xigua");
+  //   assert(res.length > 2, `Expected res.length > 2, but got ${res.length}`);
+  // });
+
+  // await t.test('GET xigua danmu segments', async () => {
+  //   const res = await xiguaSource.getComments("https://m.ixigua.com/video/6551333775341519368", "xigua", true);
+  //   assert(res.type === "xigua", `Expected res.type === "xigua", but got ${res.type === "xigua"}`);
+  //   assert(res.segmentList.length >= 0, `Expected res.segmentList.length >= 0, but got ${res.segmentList.length}`);
+  // });
+
+  // await t.test('GET xigua segment danmu', async () => {
+  //   const segment = Segment.fromJson({
+  //     type: 'xigua',
+  //     segment_start: 1200000,
+  //     segment_end: 1500000,
+  //     url: 'https://ib.snssdk.com/vapp/danmaku/list/v1/?item_id=6551333775341519368&start_time=1200000&end_time=1500000&format=json'
+  //   });
+  //   const res = await xiguaSource.getSegmentComments(segment);
+  //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
+  // });
+
+  // await t.test('GET maiduidui danmu', async () => {
+  //   const res = await maiduiduiSource.getComments("https://www.mddcloud.com.cn/video/ff8080817410d5a5017490f5f4d311de.html?num=2&uuid=ff8080817410d5a5017490f5f4d311e0", "maiduidui");
+  //   assert(res.length > 2, `Expected res.length > 2, but got ${res.length}`);
+  // });
+
+  // await t.test('GET maiduidui danmu segments', async () => {
+  //   const res = await maiduiduiSource.getComments("https://www.mddcloud.com.cn/video/ff8080817410d5a5017490f5f4d311de.html?num=2&uuid=ff8080817410d5a5017490f5f4d311e0", "maiduidui", true);
+  //   console.log(res.segmentList);
+  //   assert(res.type === "maiduidui", `Expected res.type === "maiduidui", but got ${res.type === "maiduidui"}`);
+  //   assert(res.segmentList.length >= 0, `Expected res.segmentList.length >= 0, but got ${res.segmentList.length}`);
+  // });
+
+  // await t.test('GET maiduidui segment danmu', async () => {
+  //   const segment = Segment.fromJson({
+  //     type: 'maiduidui',
+  //     segment_start: 120,
+  //     segment_end: 180,
+  //     url: 'https://www.mddcloud.com.cn/video/ff8080817410d5a5017490f5f4d311de.html?num=2&uuid=ff8080817410d5a5017490f5f4d311e0'
+  //   });
+  //   const res = await maiduiduiSource.getSegmentComments(segment);
   //   assert(res.length >= 0, `Expected res.length >= 0, but got ${res.length}`);
   // });
 
